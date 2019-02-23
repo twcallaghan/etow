@@ -52,10 +52,11 @@ knotMoveDistance=screenWidth/30
 topBuffer=50
 ropeThickness=knotWidthHeight/2
 ropeThicknessHalf=ropeThickness/2
+roundsToWin=10
 
 gameFontSize=50
-#gameFont=pygame.font.Font('./digital_counter_7.ttf',gameFontSize)
-gameFont=pygame.font.SysFont("monospace", gameFontSize)
+gameFont=pygame.font.Font('./digital_counter_7.ttf',gameFontSize)
+#gameFont=pygame.font.SysFont("monospace", gameFontSize)
 
 screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
 pygame.display.set_caption('Hello World')
@@ -131,10 +132,10 @@ while not done:
         p1Count1s=0
         p2Count1s=0
 
-        if ((p1Rounds-p2Rounds) >= 10):
+        if ((p1Rounds-p2Rounds) >= roundsToWin):
             print('\nPlayer 1 wins!')
             done=True
-        elif ((p2Rounds-p1Rounds) >= 10):
+        elif ((p2Rounds-p1Rounds) >= roundsToWin):
             print('\nPlayer 2 wins!')
             done=True
 
@@ -142,12 +143,18 @@ while not done:
 
     screen.fill(WHITE)
 
-    text=gameFont.render(str(p2Rounds),True,BLUE)
-    textRect=text.get_rect()
-    textRect.centerx=screen.get_rect().centerx
-    textRect.centery=screen.get_rect().centery
-    screen.blit(text,textRect)
-    #pygame.display.update()
+    # right player rounds
+    text=gameFont.render(str(p1Rounds),False,BLACK)
+    screen.blit(text,(screenWidth-100,screenHeight-200))
+    # right player rounds
+    text=gameFont.render(str(p1CountAll),False,BLACK)
+    screen.blit(text,(screenWidth-100,screenHeight-100))
+    # left player rounds
+    text=gameFont.render(str(p2Rounds),False,BLACK)
+    screen.blit(text,(50,screenHeight-200))
+    # left player rounds
+    text=gameFont.render(str(p2CountAll),False,BLACK)
+    screen.blit(text,(50,screenHeight-100))
 
     # player right power meter
     for y in range(1,11):
@@ -170,6 +177,12 @@ while not done:
     pygame.draw.rect(screen,thisColor,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),topBuffer,knotWidthHeight,knotWidthHeight])
     pygame.draw.rect(screen,RED,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+knotWidthHeight,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidth,ropeThickness])
     pygame.draw.rect(screen,BLUE,[0,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),ropeThickness])
+
+    # rounds until victory
+    text=gameFont.render(str(10-abs(p1Rounds-p2Rounds)),False,BLACK)
+    statusX=screenWidthMiddle+(knot*knotMoveDistance)+(text.get_rect().width/2*0)
+    statusY=topBuffer+knotWidthHeightHalf-(text.get_rect().height/2)
+    screen.blit(text,(statusX,statusY))
 
     pygame.display.flip()
 
