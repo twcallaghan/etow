@@ -1,3 +1,4 @@
+import sys
 import os
 import pygame
 from pygame.locals import *
@@ -35,6 +36,11 @@ for testMode in wantedDisplays:
         print("can do {0}".format(testMode))
         screenWidth=testMode[0]
         screenHeight=testMode[1]
+        break
+
+if (screenWidth == 0):
+    print("Display not capable of {0}, exiting".format(wantedDisplays))
+    sys.exit(1)
 
 screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
 pygame.display.set_caption('Hello World')
