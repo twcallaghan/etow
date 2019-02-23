@@ -42,6 +42,21 @@ if (screenWidth == 0):
     print("Display not capable of {0}, exiting".format(wantedDisplays))
     sys.exit(1)
 
+playerPowerWidthCell=screenWidth/30
+playerPowerHeightCell=screenHeight/30
+screenWidthMiddle=screenWidth/2
+screenHeightMiddle=screenHeight/2
+knotWidthHeight=screenWidth/10
+knotWidthHeightHalf=knotWidthHeight/2
+knotMoveDistance=screenWidth/30
+topBuffer=50
+ropeThickness=knotWidthHeight/2
+ropeThicknessHalf=ropeThickness/2
+
+gameFontSize=50
+#gameFont=pygame.font.Font('./digital_counter_7.ttf',gameFontSize)
+gameFont=pygame.font.SysFont("monospace", gameFontSize)
+
 screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
 pygame.display.set_caption('Hello World')
 pygame.mouse.set_visible(1)
@@ -104,11 +119,11 @@ while not done:
 
     if ((numTicks % tickSpeed) == 0):
         print("p1={0}  p2={1}".format(p1Count1s,p2Count1s))
-        for x in range(1,10):
-            p1Speeds[x]=p1Speeds[x+1]
-            p2Speeds[x]=p2Speeds[x+1]
-        p1Speeds[10]=p1Count1s
-        p2Speeds[10]=p2Count1s
+        for x in range(10,1,-1):
+            p1Speeds[x]=p1Speeds[x-1]
+            p2Speeds[x]=p2Speeds[x-1]
+        p1Speeds[1]=p1Count1s
+        p2Speeds[1]=p2Count1s
         if (p1Count1s > p2Count1s):
             p1Rounds+=1
         elif (p2Count1s > p1Count1s):
@@ -127,23 +142,34 @@ while not done:
 
     screen.fill(WHITE)
 
+    text=gameFont.render(str(p2Rounds),True,BLUE)
+    textRect=text.get_rect()
+    textRect.centerx=screen.get_rect().centerx
+    textRect.centery=screen.get_rect().centery
+    screen.blit(text,textRect)
+    #pygame.display.update()
+
+    # player right power meter
     for y in range(1,11):
         for x in range(0,p1Speeds[y]):
-            pygame.draw.rect(screen,RED,[screenWidth-100-((10-y)*10),screenHeight-50-(x*10),10,10])
+            pygame.draw.rect(screen,RED,[screenWidthMiddle+10+((y-1)*playerPowerWidthCell),screenHeight-50-(x*playerPowerHeightCell),playerPowerWidthCell,playerPowerHeightCell])
 
+    # player left power meter
     for y in range(1,11):
         for x in range(0,p2Speeds[y]):
-            pygame.draw.rect(screen,BLUE,[100+(y*10),screenHeight-50-(x*10),10,10])
+            pygame.draw.rect(screen,BLUE,[screenWidthMiddle-10-((y)*playerPowerWidthCell),screenHeight-50-(x*playerPowerHeightCell),playerPowerWidthCell,playerPowerHeightCell])
 
     knot = p1Rounds - p2Rounds
+    thisColor=BLACK
     if (p1Rounds > p2Rounds):
-        pygame.draw.rect(screen,RED,[(screenWidth/2)-25+(knot*25),50,50,50])
+        thisColor=RED
     elif (p2Rounds > p1Rounds):
-        pygame.draw.rect(screen,BLUE,[(screenWidth/2)-25+(knot*25),50,50,50])
+        thisColor=BLUE
     else:
-        pygame.draw.rect(screen,BLACK,[(screenWidth/2)-25+(knot*25),50,50,50])
-    pygame.draw.rect(screen,RED,[(screenWidth/2)-25+(knot*25)+50,70,1000,10])
-    pygame.draw.rect(screen,BLUE,[0,70,(screenWidth/2)-25+(knot*25),10])
+        thisColor=BLACK
+    pygame.draw.rect(screen,thisColor,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),topBuffer,knotWidthHeight,knotWidthHeight])
+    pygame.draw.rect(screen,RED,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+knotWidthHeight,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidth,ropeThickness])
+    pygame.draw.rect(screen,BLUE,[0,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),ropeThickness])
 
     pygame.display.flip()
 
