@@ -13,6 +13,9 @@ else:
 p2IsBot=True
 p2Speed=8
 
+# preferred display modes
+wantedDisplays=[(1920,1080),(1366,768)]
+
 # Define the colors we will use in RGB format
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
@@ -20,11 +23,20 @@ BLUE =  (  0,   0, 255)
 GREEN = (  0, 255,   0)
 RED =   (255,   0,   0)
 
-screenWidth=640
-screenHeight=480
+screenWidth=0
+screenHeight=0
+screenBitDepth=8
 
 pygame.init()
-screen = pygame.display.set_mode((640, 480))
+
+# can we get the mode we want
+for testMode in wantedDisplays:
+    if pygame.display.mode_ok(testMode,pygame.FULLSCREEN,screenBitDepth):
+        print("can do {0}".format(testMode))
+        screenWidth=testMode[0]
+        screenHeight=testMode[1]
+
+screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
 pygame.display.set_caption('Hello World')
 pygame.mouse.set_visible(1)
 
