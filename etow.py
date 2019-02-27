@@ -42,17 +42,21 @@ if (screenWidth == 0):
     print("Display not capable of {0}, exiting".format(wantedDisplays))
     sys.exit(1)
 
-playerPowerWidthCell=screenWidth/30
-playerPowerHeightCell=screenHeight/30
-screenWidthMiddle=screenWidth/2
-screenHeightMiddle=screenHeight/2
-knotWidthHeight=screenWidth/10
-knotWidthHeightHalf=knotWidthHeight/2
-knotMoveDistance=screenWidth/30
+roundsToWin=20
+playerPowerWidthCell=int(screenWidth/30)
+playerPowerHeightCell=int(screenHeight/30)
+screenWidthMiddle=int(screenWidth/2)
+screenHeightMiddle=int(screenHeight/2)
+knotWidthHeight=int(screenWidth/10)
+knotWidthHeightHalf=int(knotWidthHeight/2)
+knotMoveDistance=int(screenWidth/((roundsToWin*2)+10))
 topBuffer=50
-ropeThickness=knotWidthHeight/2
-ropeThicknessHalf=ropeThickness/2
-roundsToWin=10
+ropeThickness=int(knotWidthHeight/2)
+ropeThicknessHalf=int(ropeThickness/2)
+
+lastRoundMargin=0
+lastRoundVictor='unknown'
+lastRoundPulse=0
 
 gameFontSize=50
 gameFont=pygame.font.Font('./digital_counter_7.ttf',gameFontSize)
@@ -127,8 +131,16 @@ while not done:
         p2Speeds[1]=p2Count1s
         if (p1Count1s > p2Count1s):
             p1Rounds+=1
+            lastRoundMargin=p1Count1s-p2Count1s
+            lastRoundVictor='right'
         elif (p2Count1s > p1Count1s):
             p2Rounds+=1
+            lastRoundMargin=p2Count1s-p1Count1s
+            lastRoundVictor='left'
+        else:
+            lastRoundMargin=0
+            lastRoundVictor='unknown'
+        lastRoundPulse=0
         p1Count1s=0
         p2Count1s=0
 
@@ -143,16 +155,29 @@ while not done:
 
     screen.fill(WHITE)
 
+    if (lastRoundVictor=='left'):
+        text=gameFont.render('+'+str(lastRoundMargin),False,BLACK)
+        screen.blit(text,(200,200))
+        #if (lastRoundPulse < 5):
+        #    lastRoundPulse+=1
+        #    pygame.draw.rect(screen,BLUE,[0,100,screenWidthMiddle,300])
+    elif (lastRoundVictor=='right'):
+        text=gameFont.render('+'+str(lastRoundMargin),False,BLACK)
+        screen.blit(text,(screenWidth-200,200))
+        #if (lastRoundPulse < 5):
+        #    lastRoundPulse+=1
+        #    pygame.draw.rect(screen,RED,[screenWidthMiddle,100,screenWidthMiddle,300])
+
     # right player rounds
     text=gameFont.render(str(p1Rounds),False,BLACK)
     screen.blit(text,(screenWidth-100,screenHeight-200))
-    # right player rounds
+    # right player taps
     text=gameFont.render(str(p1CountAll),False,BLACK)
     screen.blit(text,(screenWidth-100,screenHeight-100))
     # left player rounds
     text=gameFont.render(str(p2Rounds),False,BLACK)
     screen.blit(text,(50,screenHeight-200))
-    # left player rounds
+    # left player taps
     text=gameFont.render(str(p2CountAll),False,BLACK)
     screen.blit(text,(50,screenHeight-100))
 
@@ -174,12 +199,15 @@ while not done:
         thisColor=BLUE
     else:
         thisColor=BLACK
+    # knot
     pygame.draw.rect(screen,thisColor,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),topBuffer,knotWidthHeight,knotWidthHeight])
+    # right rope
     pygame.draw.rect(screen,RED,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+knotWidthHeight,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidth,ropeThickness])
+    # left rope
     pygame.draw.rect(screen,BLUE,[0,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),ropeThickness])
 
     # rounds until victory
-    text=gameFont.render(str(10-abs(p1Rounds-p2Rounds)),False,BLACK)
+    text=gameFont.render(str(roundsToWin-abs(p1Rounds-p2Rounds)),False,BLACK)
     statusX=screenWidthMiddle+(knot*knotMoveDistance)+(text.get_rect().width/2*0)
     statusY=topBuffer+knotWidthHeightHalf-(text.get_rect().height/2)
     screen.blit(text,(statusX,statusY))
