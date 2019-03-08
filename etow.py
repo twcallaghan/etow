@@ -25,6 +25,26 @@ def button_callback2(channel):
         p1Count1s+=1
         p1Mode=0
 
+def button_callback3(channel):
+    global p2CountAll
+    global p2Count1s
+    global p2Mode
+    #print("Button 1 was pushed!")
+    if (p2Mode == 0):
+        p2CountAll+=1
+        p2Count1s+=1
+        p2Mode=1
+
+def button_callback4(channel):
+    global p2CountAll
+    global p2Count1s
+    global p2Mode
+    #print("Button 1 was pushed!")
+    if (p2Mode == 1):
+        p2CountAll+=1
+        p2Count1s+=1
+        p2Mode=0
+
 if os.uname()[1] == 'raspberrypi':
     print('Running on Raspberry Pi')
     isRasPi=True
@@ -36,14 +56,17 @@ if os.uname()[1] == 'raspberrypi':
     # set pin 0 to be an input in and set the initial value to be pulled low (off)
     GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    # Setup event on pin 10 rising edge
+    GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    # Setup event on pin rising edges
     GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback1,bouncetime=100)
-    # Setup event on pin 12 rising edge
     GPIO.add_event_detect(12,GPIO.RISING,callback=button_callback2,bouncetime=100)
+    GPIO.add_event_detect(16,GPIO.RISING,callback=button_callback1,bouncetime=100)
+    GPIO.add_event_detect(18,GPIO.RISING,callback=button_callback2,bouncetime=100)
 else:
     print('Not running on Raspberry Pi')
 
-p2IsBot=True
+p2IsBot=False
 p2Speed=8
 
 # preferred display modes
@@ -76,7 +99,7 @@ if (screenWidth == 0):
 
 roundsToWin=20
 playerPowerWidthCell=int(screenWidth/30)
-playerPowerHeightCell=int(screenHeight/30)
+playerPowerHeightCell=int(screenHeight/50)
 screenWidthMiddle=int(screenWidth/2)
 screenHeightMiddle=int(screenHeight/2)
 knotWidthHeight=int(screenWidth/10)
@@ -249,7 +272,7 @@ while not done:
 print("Total presses          | p1={0}  p2={1}".format(p1CountAll,p2CountAll))
 print("Avg presses per second | p1={0}  p2={1}".format(p1CountAll/numSeconds,p2CountAll/numSeconds))
 
-if (isRasPi==True):
+if (isRasPi):
     # clean up
     GPIO.cleanup()
 
