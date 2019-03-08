@@ -8,6 +8,18 @@ isRasPi=False
 if os.uname()[1] == 'raspberrypi':
     print('Running on Raspberry Pi')
     isRasPi=True
+    import RPi.GPIO as GPIO
+    # ignore warnings
+    GPIO.setwarnings(False)
+    # use physical pin numbering
+    GPIO.setmode(GPIO.BOARD)
+    # set pin 0 to be an input in and set the initial value to be pulled low (off)
+    GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    # Setup event on pin 10 rising edge
+    GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback1,bouncetime=100)
+    # Setup event on pin 12 rising edge
+    GPIO.add_event_detect(12,GPIO.RISING,callback=button_callback2,bouncetime=100)
 else:
     print('Not running on Raspberry Pi')
 
@@ -217,3 +229,26 @@ while not done:
 print("Total presses          | p1={0}  p2={1}".format(p1CountAll,p2CountAll))
 print("Avg presses per second | p1={0}  p2={1}".format(p1CountAll/numSeconds,p2CountAll/numSeconds))
 
+if (isRasPi==True):
+    # clean up
+    GPIO.cleanup()
+
+def button_callback1(channel):
+    global p1CountAll
+    global p1Count1s
+    global p1Mode
+    #print("Button 1 was pushed!")
+    if (p1Mode == 0):
+        p1CountAll+=1
+        p1Count1s+=1
+        p1Mode=1
+
+def button_callback2(channel):
+    global p1CountAll
+    global p1Count1s
+    global p1Mode
+    #print("Button 1 was pushed!")
+    if (p1Mode == 1):
+        p1CountAll+=1
+        p1Count1s+=1
+        p1Mode=0
