@@ -5,6 +5,26 @@ from pygame.locals import *
 
 isRasPi=False
 
+def button_callback1(channel):
+    global p1CountAll
+    global p1Count1s
+    global p1Mode
+    #print("Button 1 was pushed!")
+    if (p1Mode == 0):
+        p1CountAll+=1
+        p1Count1s+=1
+        p1Mode=1
+
+def button_callback2(channel):
+    global p1CountAll
+    global p1Count1s
+    global p1Mode
+    #print("Button 1 was pushed!")
+    if (p1Mode == 1):
+        p1CountAll+=1
+        p1Count1s+=1
+        p1Mode=0
+
 if os.uname()[1] == 'raspberrypi':
     print('Running on Raspberry Pi')
     isRasPi=True
@@ -233,22 +253,3 @@ if (isRasPi==True):
     # clean up
     GPIO.cleanup()
 
-def button_callback1(channel):
-    global p1CountAll
-    global p1Count1s
-    global p1Mode
-    #print("Button 1 was pushed!")
-    if (p1Mode == 0):
-        p1CountAll+=1
-        p1Count1s+=1
-        p1Mode=1
-
-def button_callback2(channel):
-    global p1CountAll
-    global p1Count1s
-    global p1Mode
-    #print("Button 1 was pushed!")
-    if (p1Mode == 1):
-        p1CountAll+=1
-        p1Count1s+=1
-        p1Mode=0
