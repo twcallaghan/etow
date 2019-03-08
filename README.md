@@ -12,3 +12,5 @@ raspberry pi model???
 packages
 --------
 $ pip3 install pygame
+
+Wiring.
