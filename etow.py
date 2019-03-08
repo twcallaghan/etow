@@ -61,8 +61,8 @@ if os.uname()[1] == 'raspberrypi':
     # Setup event on pin rising edges
     GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback1,bouncetime=100)
     GPIO.add_event_detect(12,GPIO.RISING,callback=button_callback2,bouncetime=100)
-    GPIO.add_event_detect(16,GPIO.RISING,callback=button_callback1,bouncetime=100)
-    GPIO.add_event_detect(18,GPIO.RISING,callback=button_callback2,bouncetime=100)
+    GPIO.add_event_detect(16,GPIO.RISING,callback=button_callback3,bouncetime=100)
+    GPIO.add_event_detect(18,GPIO.RISING,callback=button_callback4,bouncetime=100)
 else:
     print('Not running on Raspberry Pi')
 
