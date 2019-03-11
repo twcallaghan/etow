@@ -21,14 +21,12 @@ screenBitDepth=8
 
 #gameFont='./assets/digital_counter_7.ttf'
 gameFont='freesansbold.ttf'
-#gameFont050=pygame.font.Font(gameFont,50)
-#gameFont075=pygame.font.Font(gameFont,75)
-#gameFont100=pygame.font.Font(gameFont,100)
 gameFont050=None
 gameFont075=None
 gameFont100=None
+gameFont250=None
+gameFont500=None
 
-#clock=pygame.time.Clock()
 clock=None
 
 tickSpeed=60
@@ -58,6 +56,39 @@ def screen_title():
             text=gameFont100.render('War',False,BLACK)
             thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
             screen.blit(text,thisTextRect)
+
+        pygame.display.flip()
+
+    pygame.event.pump()
+
+
+def screen_rules():
+    done=False
+    numTicks=0
+    numSeconds=10
+    while not done:
+        numTicks += 1
+        if ((numTicks % tickSpeed) == 0):
+            numSeconds -= 1
+        if (numSeconds == 0):
+            done=True
+        clock.tick(tickSpeed)
+        screen.fill(WHITE)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
+                done=True
+
+        text=gameFont100.render('Press alternating buttons quickly.',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
+        screen.blit(text,thisTextRect)
+        text=gameFont100.render('Defeat your opponent.',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
+        screen.blit(text,thisTextRect)
+        text=gameFont500.render(str(numSeconds),False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
+        screen.blit(text,thisTextRect)
 
         pygame.display.flip()
 
@@ -392,6 +423,8 @@ def main():
     global gameFont050
     global gameFont075
     global gameFont100
+    global gameFont250
+    global gameFont500
     global clock
     global isRasPi
 
@@ -459,10 +492,13 @@ def main():
     gameFont050=pygame.font.Font(gameFont,50)
     gameFont075=pygame.font.Font(gameFont,75)
     gameFont100=pygame.font.Font(gameFont,100)
+    gameFont250=pygame.font.Font(gameFont,250)
+    gameFont500=pygame.font.Font(gameFont,500)
 
     clock=pygame.time.Clock()
 
     screen_title()
+    screen_rules()
     screen_game()
 
     if (isRasPi):
