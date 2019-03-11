@@ -9,6 +9,331 @@ p2IsBot=True
 p2Speed=8
 roundsToWin=10
 
+BLACK = (  0,   0,   0)
+WHITE = (255, 255, 255)
+BLUE =  (  0,   0, 255)
+GREEN = (  0, 255,   0)
+RED =   (255,   0,   0)
+
+screenWidth=0
+screenHeight=0
+screenBitDepth=8
+
+#gameFont='./assets/digital_counter_7.ttf'
+gameFont='freesansbold.ttf'
+#gameFont050=pygame.font.Font(gameFont,50)
+#gameFont075=pygame.font.Font(gameFont,75)
+#gameFont100=pygame.font.Font(gameFont,100)
+gameFont050=None
+gameFont075=None
+gameFont100=None
+
+#clock=pygame.time.Clock()
+clock=None
+
+tickSpeed=60
+
+
+def screen_title():
+    done=False
+    while not done:
+        clock.tick(tickSpeed)
+        screen.fill(WHITE)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
+                done=True
+
+        if (True):
+            text=gameFont100.render('Electronic',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
+            screen.blit(text,thisTextRect)
+            text=gameFont100.render('Tug',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
+            screen.blit(text,thisTextRect)
+            text=gameFont100.render('Of',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,650))
+            screen.blit(text,thisTextRect)
+            text=gameFont100.render('War',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
+            screen.blit(text,thisTextRect)
+
+        pygame.display.flip()
+
+    pygame.event.pump()
+
+
+def screen_game():
+    numTicks=0
+    numSeconds=0
+    p1Mode=0
+    p1CountAll=0
+    p1Count1s=0
+    p1Rounds=0
+    p2Mode=0
+    p2CountAll=0
+    p2Count1s=0
+    p2Rounds=0
+    p1FinalRounds=0
+    p1FinalTaps=0
+    p2FinalRounds=0
+    p2FinalTaps=0
+    p1FinalAvg=0
+    p2FinalAvg=0
+    lastRoundMargin=0
+    lastRoundVictor='unknown'
+    advantageColor=0
+    advantageIncrement=int(255/tickSpeed)
+
+    p1Speeds={}
+    p2Speeds={}
+    for x in range(1,11):
+        p1Speeds[x]=0
+        p2Speeds[x]=0
+
+    winner=''
+    done=False
+    while not done:
+        clock.tick(tickSpeed)
+        numTicks+=1
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
+                done=True
+            if ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_LEFT) and (p1Mode == 0)):
+                p1CountAll+=1
+                p1Count1s+=1
+                p1Mode=1
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_RIGHT) and (p1Mode == 1)):
+                p1CountAll+=1
+                p1Count1s+=1
+                p1Mode=0
+            if (p2IsBot):
+                p2Count1s=p2Speed
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_z) and (p2Mode == 0)):
+                p2CountAll+=1
+                p2Count1s+=1
+                p2Mode=1
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_x) and (p2Mode == 1)):
+                p2CountAll+=1
+                p2Count1s+=1
+                p2Mode=0
+
+        if ((numTicks % tickSpeed) == 0):
+            advantageColor=255
+            #print("p1={0}  p2={1}".format(p1Count1s,p2Count1s))
+            for x in range(10,1,-1):
+                p1Speeds[x]=p1Speeds[x-1]
+                p2Speeds[x]=p2Speeds[x-1]
+            p1Speeds[1]=p1Count1s
+            p2Speeds[1]=p2Count1s
+            if (p2IsBot):
+                p2CountAll+=p2Speed
+            if (p1Count1s > p2Count1s):
+                p1Rounds+=1
+                lastRoundMargin=p1Count1s-p2Count1s
+                lastRoundVictor='right'
+                #if not ((p1Rounds-p2Rounds) >= roundsToWin):
+                #    player1Sound.play()
+            elif (p2Count1s > p1Count1s):
+                p2Rounds+=1
+                lastRoundMargin=p2Count1s-p1Count1s
+                lastRoundVictor='left'
+                #if not ((p2Rounds-p1Rounds) >= roundsToWin):
+                #    player2Sound.play()
+            else:
+                lastRoundMargin=0
+                lastRoundVictor='unknown'
+            p1Count1s=0
+            p2Count1s=0
+
+            if ((p1Rounds-p2Rounds) >= roundsToWin):
+                #victorySound.play()
+                done=True
+                winner='Red'
+            elif ((p2Rounds-p1Rounds) >= roundsToWin):
+                #victorySound.play()
+                done=True
+                winner='Blue'
+
+            if (winner != ''):
+                # capture final statistics
+                p1FinalRounds=p1Rounds
+                p1FinalTaps=p1CountAll
+                p2FinalRounds=p2Rounds
+                p2FinalTaps=p2CountAll
+                thisSeconds=numSeconds
+                if (thisSeconds==0):
+                    thisSeconds=1
+                p1FinalAvg=p1CountAll/thisSeconds
+                p2FinalAvg=p2CountAll/thisSeconds
+
+            numSeconds+=1
+
+        screen.fill(WHITE)
+
+        if (lastRoundVictor=='left'):
+            advantageColor -= advantageIncrement
+            pygame.draw.rect(screen,(advantageColor,advantageColor,255),[50,300,screenWidthMiddle-50-50,100])
+            text=gameFont075.render('+'+str(lastRoundMargin)+' advantage',False,WHITE)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle/2,350))
+            screen.blit(text,thisTextRect)
+        elif (lastRoundVictor=='right'):
+            advantageColor -= advantageIncrement
+            pygame.draw.rect(screen,(255,advantageColor,advantageColor),[screenWidthMiddle+50,300,screenWidthMiddle-50-50,100])
+            text=gameFont075.render('+'+str(lastRoundMargin)+' advantage',False,WHITE)
+            thisTextRect=text.get_rect(center=(screenWidth-(screenWidthMiddle/2),350))
+            screen.blit(text,thisTextRect)
+
+        # right player rounds
+        text=gameFont050.render('Rnds',False,BLACK)
+        screen.blit(text,(screenWidth-300,screenHeight-300))
+        text=gameFont050.render(str(p1Rounds),False,BLACK)
+        screen.blit(text,(screenWidth-150,screenHeight-300))
+        # right player taps
+        text=gameFont050.render('Taps',False,BLACK)
+        screen.blit(text,(screenWidth-300,screenHeight-200))
+        text=gameFont050.render(str(p1CountAll),False,BLACK)
+        screen.blit(text,(screenWidth-150,screenHeight-200))
+        # right player avg
+        text=gameFont050.render('Avg',False,BLACK)
+        screen.blit(text,(screenWidth-300,screenHeight-100))
+        thisSeconds=numSeconds
+        if (thisSeconds==0):
+            thisSeconds=1
+        text=gameFont050.render("{0:0.2f}".format(p1CountAll/thisSeconds),False,BLACK)
+        screen.blit(text,(screenWidth-150,screenHeight-100))
+        # left player rounds
+        text=gameFont050.render('Rnds',False,BLACK)
+        screen.blit(text,(50,screenHeight-300))
+        text=gameFont050.render(str(p2Rounds),False,BLACK)
+        screen.blit(text,(200,screenHeight-300))
+        # left player taps
+        text=gameFont050.render('Taps',False,BLACK)
+        screen.blit(text,(50,screenHeight-200))
+        text=gameFont050.render(str(p2CountAll),False,BLACK)
+        screen.blit(text,(200,screenHeight-200))
+        # left player avg
+        text=gameFont050.render('Avg',False,BLACK)
+        screen.blit(text,(50,screenHeight-100))
+        thisSeconds=numSeconds
+        if (thisSeconds==0):
+            thisSeconds=1
+        text=gameFont050.render("{0:0.2f}".format(p2CountAll/thisSeconds),False,BLACK)
+        screen.blit(text,(200,screenHeight-100))
+
+        # player right power meter
+        for y in range(1,11):
+            for x in range(0,p1Speeds[y]):
+                pygame.draw.rect(screen,RED,[screenWidthMiddle+10+((y-1)*playerPowerWidthCell)+playerPowerCellBuffer,screenHeight-50-(x*playerPowerHeightCell)+playerPowerCellBuffer,playerPowerWidthCell-playerPowerCellBuffer,playerPowerHeightCell-playerPowerCellBuffer])
+
+        # player left power meter
+        for y in range(1,11):
+            for x in range(0,p2Speeds[y]):
+                pygame.draw.rect(screen,BLUE,[screenWidthMiddle-10-((y)*playerPowerWidthCell)+playerPowerCellBuffer,screenHeight-50-(x*playerPowerHeightCell)+playerPowerCellBuffer,playerPowerWidthCell-playerPowerCellBuffer,playerPowerHeightCell-playerPowerCellBuffer])
+
+        knot = p1Rounds - p2Rounds
+        thisColor=BLACK
+        if (p1Rounds > p2Rounds):
+            thisColor=RED
+        elif (p2Rounds > p1Rounds):
+            thisColor=BLUE
+        else:
+            thisColor=BLACK
+        # knot
+        pygame.draw.rect(screen,thisColor,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),topBuffer,knotWidthHeight,knotWidthHeight])
+        # right rope
+        pygame.draw.rect(screen,RED,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+knotWidthHeight,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidth,ropeThickness])
+        # left rope
+        pygame.draw.rect(screen,BLUE,[0,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),ropeThickness])
+        # left victory
+        text=gameFont050.render('win',False,BLACK)
+        thisTextRect=text.get_rect(center=(250,25))
+        screen.blit(text,thisTextRect)
+        # right victory
+        text=gameFont050.render('win',False,BLACK)
+        thisTextRect=text.get_rect(center=(1675,25))
+        screen.blit(text,thisTextRect)
+
+        # rounds until victory
+        if (winner == ''):
+            text=gameFont100.render(str(roundsToWin-abs(p1Rounds-p2Rounds)),False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+(knotWidthHeight/2),topBuffer+(knotWidthHeight/2)))
+            screen.blit(text,thisTextRect)
+
+        pygame.display.flip()
+
+    if not (winner == ''):
+        done=False
+        numTicks=0
+        while not done:
+            clock.tick(tickSpeed)
+            numTicks+=1
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
+                    done=True
+
+            screen.fill(WHITE)
+
+            p1FinalRounds=p1Rounds
+            p1FinalTaps=p1CountAll
+            p2FinalRounds=p2Rounds
+            p2FinalTaps=p2CountAll
+            thisSeconds=numSeconds
+            if (thisSeconds==0):
+                thisSeconds=1
+            p1FinalAvg=p1CountAll/thisSeconds
+            p2FinalAvg=p2CountAll/thisSeconds
+
+            if (winner=='Blue'):
+                pygame.draw.rect(screen,BLUE,[50,100,screenWidthMiddle-50-50,600])
+                text=gameFont100.render('winner',False,WHITE)
+                thisTextRect=text.get_rect(center=(screenWidthMiddle/2,400))
+                screen.blit(text,thisTextRect)
+            elif (winner=='Red'):
+                pygame.draw.rect(screen,RED,[screenWidthMiddle+50,100,screenWidthMiddle-50-50,600])
+                text=gameFont100.render('winner',False,WHITE)
+                thisTextRect=text.get_rect(center=(screenWidth-(screenWidthMiddle/2),400))
+                screen.blit(text,thisTextRect)
+
+            # right player rounds
+            text=gameFont050.render('Rnds',False,BLACK)
+            screen.blit(text,(screenWidth-300,screenHeight-300))
+            text=gameFont050.render(str(p1FinalRounds),False,BLACK)
+            screen.blit(text,(screenWidth-150,screenHeight-300))
+            # right player taps
+            text=gameFont050.render('Taps',False,BLACK)
+            screen.blit(text,(screenWidth-300,screenHeight-200))
+            text=gameFont050.render(str(p1FinalTaps),False,BLACK)
+            screen.blit(text,(screenWidth-150,screenHeight-200))
+            # right player avg
+            text=gameFont050.render('Avg',False,BLACK)
+            screen.blit(text,(screenWidth-300,screenHeight-100))
+            text=gameFont050.render("{0:0.2f}".format(p1FinalAvg),False,BLACK)
+            screen.blit(text,(screenWidth-150,screenHeight-100))
+            # left player rounds
+            text=gameFont050.render('Rnds',False,BLACK)
+            screen.blit(text,(50,screenHeight-300))
+            text=gameFont050.render(str(p2FinalRounds),False,BLACK)
+            screen.blit(text,(200,screenHeight-300))
+            # left player taps
+            text=gameFont050.render('Taps',False,BLACK)
+            screen.blit(text,(50,screenHeight-200))
+            text=gameFont050.render(str(p2FinalTaps),False,BLACK)
+            screen.blit(text,(200,screenHeight-200))
+            # left player avg
+            text=gameFont050.render('Avg',False,BLACK)
+            screen.blit(text,(50,screenHeight-100))
+            text=gameFont050.render("{0:0.2f}".format(p2FinalAvg),False,BLACK)
+            screen.blit(text,(200,screenHeight-100))
+
+            pygame.display.flip()
+
+
 def button_callback1(channel):
     global p1CountAll
     global p1Count1s
@@ -49,365 +374,103 @@ def button_callback4(channel):
         p2Count1s+=1
         p2Mode=0
 
-if os.uname()[1] == 'raspberrypi':
-    print('Running on Raspberry Pi')
-    isRasPi=True
-    import RPi.GPIO as GPIO
-    # ignore warnings
-    GPIO.setwarnings(False)
-    # use physical pin numbering
-    GPIO.setmode(GPIO.BOARD)
-    # set pin 0 to be an input in and set the initial value to be pulled low (off)
-    GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    # Setup event on pin rising edges
-    GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback1,bouncetime=100)
-    GPIO.add_event_detect(12,GPIO.RISING,callback=button_callback2,bouncetime=100)
-    GPIO.add_event_detect(16,GPIO.RISING,callback=button_callback3,bouncetime=100)
-    GPIO.add_event_detect(18,GPIO.RISING,callback=button_callback4,bouncetime=100)
-else:
-    print('Not running on Raspberry Pi')
+def main():
+    global screenWidth
+    global screenHeight
+    global playerPowerWidthCell
+    global playerPowerHeightCell
+    global playerPowerCellBuffer
+    global screenWidthMiddle
+    global screenHeightMiddle
+    global knotWidthHeight
+    global knotWidthHeightHalf
+    global knotMoveDistance
+    global topBuffer
+    global ropeThickness
+    global ropeThicknessHalf
+    global screen
+    global gameFont050
+    global gameFont075
+    global gameFont100
+    global clock
+    global isRasPi
 
-# preferred display modes
-wantedDisplays=[(1920,1080),(1366,768)]
+    #pygame.mixer.pre_init(22050, -16, 1, 256)
+    #pygame.mixer.init()
+    pygame.init()
 
-# Define the colors we will use in RGB format
-BLACK = (  0,   0,   0)
-WHITE = (255, 255, 255)
-BLUE =  (  0,   0, 255)
-GREEN = (  0, 255,   0)
-RED =   (255,   0,   0)
+    # preload sound fx
+    #victorySound = pygame.mixer.Sound('./assets/winner.wav')
+    #player1Sound = pygame.mixer.Sound('./assets/player1.wav')
+    #player2Sound = pygame.mixer.Sound('./assets/player2.wav')
 
-screenWidth=0
-screenHeight=0
-screenBitDepth=8
-
-pygame.mixer.pre_init(22050, -16, 1, 256)
-pygame.mixer.init()
-pygame.init()
-
-# preload sound fx
-victorySound = pygame.mixer.Sound('./assets/winner.wav')
-player1Sound = pygame.mixer.Sound('./assets/player1.wav')
-player2Sound = pygame.mixer.Sound('./assets/player2.wav')
-
-# can we get the mode we want
-for testMode in wantedDisplays:
-    if pygame.display.mode_ok(testMode,pygame.FULLSCREEN,screenBitDepth):
-        print("can do {0}".format(testMode))
-        screenWidth=testMode[0]
-        screenHeight=testMode[1]
-        break
-
-if (screenWidth == 0):
-    print("Display not capable of {0}, exiting".format(wantedDisplays))
-    sys.exit(1)
-
-playerPowerWidthCell=int(screenWidth/30)
-playerPowerHeightCell=int(screenHeight/50)
-playerPowerCellBuffer=2
-screenWidthMiddle=int(screenWidth/2)
-screenHeightMiddle=int(screenHeight/2)
-knotWidthHeight=int(screenWidth/10)
-knotWidthHeightHalf=int(knotWidthHeight/2)
-knotMoveDistance=int(screenWidth/((roundsToWin*2)+10))
-topBuffer=50
-ropeThickness=int(knotWidthHeight/2)
-ropeThicknessHalf=int(ropeThickness/2)
-
-
-lastRoundMargin=0
-lastRoundVictor='unknown'
-
-#gameFont='./assets/digital_counter_7.ttf'
-gameFont='freesansbold.ttf'
-gameFont050=pygame.font.Font(gameFont,50)
-gameFont075=pygame.font.Font(gameFont,75)
-gameFont100=pygame.font.Font(gameFont,100)
-
-screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
-pygame.display.set_caption('Hello World')
-pygame.mouse.set_visible(1)
-
-clock = pygame.time.Clock()
-numTicks=0
-
-numSeconds=0
-p1Mode=0
-p1CountAll=0
-p1Count1s=0
-p1Rounds=0
-p2Mode=0
-p2CountAll=0
-p2Count1s=0
-p2Rounds=0
-p1FinalRounds=0
-p1FinalTaps=0
-p2FinalRounds=0
-p2FinalTaps=0
-p1FinalAvg=0
-p2FinalAvg=0
-
-p1Speeds={}
-p2Speeds={}
-for x in range(1,11):
-    p1Speeds[x]=0
-    p2Speeds[x]=0
-
-
-tickSpeed=60
-
-winner=''
-done=False
-while not done:
-    clock.tick(tickSpeed)
-    numTicks+=1
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-
-    key = pygame.key.get_pressed()
-
-    if key[K_ESCAPE]:
-        print('\nGame Shuting Down!')
-        done=True
-
-    if key[K_LEFT] and not key[K_RIGHT] and (p1Mode == 0):
-        p1CountAll+=1
-        p1Count1s+=1
-        p1Mode=1
-    elif not key[K_LEFT] and key[K_RIGHT] and (p1Mode == 1):
-        p1CountAll+=1
-        p1Count1s+=1
-        p1Mode=0
-
-    if (p2IsBot):
-        p2Count1s=p2Speed
-    elif key[K_z] and not key[K_x] and (p2Mode == 0):
-        p2CountAll+=1
-        p2Count1s+=1
-        p2Mode=1
-    elif not key[K_z] and key[K_x] and (p2Mode == 1):
-        p2CountAll+=1
-        p2Count1s+=1
-        p2Mode=0
-
-    if ((numTicks % tickSpeed) == 0):
-        print("p1={0}  p2={1}".format(p1Count1s,p2Count1s))
-        for x in range(10,1,-1):
-            p1Speeds[x]=p1Speeds[x-1]
-            p2Speeds[x]=p2Speeds[x-1]
-        p1Speeds[1]=p1Count1s
-        p2Speeds[1]=p2Count1s
-        if (p2IsBot):
-            p2CountAll+=p2Speed
-        if (p1Count1s > p2Count1s):
-            p1Rounds+=1
-            lastRoundMargin=p1Count1s-p2Count1s
-            lastRoundVictor='right'
-            if not ((p1Rounds-p2Rounds) >= roundsToWin):
-                player1Sound.play()
-        elif (p2Count1s > p1Count1s):
-            p2Rounds+=1
-            lastRoundMargin=p2Count1s-p1Count1s
-            lastRoundVictor='left'
-            if not ((p2Rounds-p1Rounds) >= roundsToWin):
-                player2Sound.play()
-        else:
-            lastRoundMargin=0
-            lastRoundVictor='unknown'
-        p1Count1s=0
-        p2Count1s=0
-
-        if ((p1Rounds-p2Rounds) >= roundsToWin):
-            victorySound.play()
-            done=True
-            winner='Red'
-        elif ((p2Rounds-p1Rounds) >= roundsToWin):
-            victorySound.play()
-            done=True
-            winner='Blue'
-
-        if (winner != ''):
-            # capture final statistics
-            p1FinalRounds=p1Rounds
-            p1FinalTaps=p1CountAll
-            p2FinalRounds=p2Rounds
-            p2FinalTaps=p2CountAll
-            thisSeconds=numSeconds
-            if (thisSeconds==0):
-                thisSeconds=1
-            p1FinalAvg=p1CountAll/thisSeconds
-            p2FinalAvg=p2CountAll/thisSeconds
-
-        numSeconds+=1
-
-    screen.fill(WHITE)
-
-    if (lastRoundVictor=='left'):
-        pygame.draw.rect(screen,BLUE,[50,300,screenWidthMiddle-50-50,100])
-        text=gameFont075.render('+'+str(lastRoundMargin)+' advantage',False,WHITE)
-        thisTextRect=text.get_rect(center=(screenWidthMiddle/2,350))
-        screen.blit(text,thisTextRect)
-    elif (lastRoundVictor=='right'):
-        pygame.draw.rect(screen,RED,[screenWidthMiddle+50,300,screenWidthMiddle-50-50,100])
-        text=gameFont075.render('+'+str(lastRoundMargin)+' advantage',False,WHITE)
-        thisTextRect=text.get_rect(center=(screenWidth-(screenWidthMiddle/2),350))
-        screen.blit(text,thisTextRect)
-
-    # right player rounds
-    text=gameFont050.render('Rnds',False,BLACK)
-    screen.blit(text,(screenWidth-300,screenHeight-300))
-    text=gameFont050.render(str(p1Rounds),False,BLACK)
-    screen.blit(text,(screenWidth-150,screenHeight-300))
-    # right player taps
-    text=gameFont050.render('Taps',False,BLACK)
-    screen.blit(text,(screenWidth-300,screenHeight-200))
-    text=gameFont050.render(str(p1CountAll),False,BLACK)
-    screen.blit(text,(screenWidth-150,screenHeight-200))
-    # right player avg
-    text=gameFont050.render('Avg',False,BLACK)
-    screen.blit(text,(screenWidth-300,screenHeight-100))
-    thisSeconds=numSeconds
-    if (thisSeconds==0):
-        thisSeconds=1
-    text=gameFont050.render("{0:0.2f}".format(p1CountAll/thisSeconds),False,BLACK)
-    screen.blit(text,(screenWidth-150,screenHeight-100))
-    # left player rounds
-    text=gameFont050.render('Rnds',False,BLACK)
-    screen.blit(text,(50,screenHeight-300))
-    text=gameFont050.render(str(p2Rounds),False,BLACK)
-    screen.blit(text,(200,screenHeight-300))
-    # left player taps
-    text=gameFont050.render('Taps',False,BLACK)
-    screen.blit(text,(50,screenHeight-200))
-    text=gameFont050.render(str(p2CountAll),False,BLACK)
-    screen.blit(text,(200,screenHeight-200))
-    # left player avg
-    text=gameFont050.render('Avg',False,BLACK)
-    screen.blit(text,(50,screenHeight-100))
-    thisSeconds=numSeconds
-    if (thisSeconds==0):
-        thisSeconds=1
-    text=gameFont050.render("{0:0.2f}".format(p2CountAll/thisSeconds),False,BLACK)
-    screen.blit(text,(200,screenHeight-100))
-
-    # player right power meter
-    for y in range(1,11):
-        for x in range(0,p1Speeds[y]):
-            pygame.draw.rect(screen,RED,[screenWidthMiddle+10+((y-1)*playerPowerWidthCell)+playerPowerCellBuffer,screenHeight-50-(x*playerPowerHeightCell)+playerPowerCellBuffer,playerPowerWidthCell-playerPowerCellBuffer,playerPowerHeightCell-playerPowerCellBuffer])
-
-    # player left power meter
-    for y in range(1,11):
-        for x in range(0,p2Speeds[y]):
-            pygame.draw.rect(screen,BLUE,[screenWidthMiddle-10-((y)*playerPowerWidthCell)+playerPowerCellBuffer,screenHeight-50-(x*playerPowerHeightCell)+playerPowerCellBuffer,playerPowerWidthCell-playerPowerCellBuffer,playerPowerHeightCell-playerPowerCellBuffer])
-
-    knot = p1Rounds - p2Rounds
-    thisColor=BLACK
-    if (p1Rounds > p2Rounds):
-        thisColor=RED
-    elif (p2Rounds > p1Rounds):
-        thisColor=BLUE
+    if os.uname()[1] == 'raspberrypi':
+        print('Running on Raspberry Pi')
+        isRasPi=True
+        import RPi.GPIO as GPIO
+        # ignore warnings
+        GPIO.setwarnings(False)
+        # use physical pin numbering
+        GPIO.setmode(GPIO.BOARD)
+        # set pin 0 to be an input in and set the initial value to be pulled low (off)
+        GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        # Setup event on pin rising edges
+        GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback1,bouncetime=100)
+        GPIO.add_event_detect(12,GPIO.RISING,callback=button_callback2,bouncetime=100)
+        GPIO.add_event_detect(16,GPIO.RISING,callback=button_callback3,bouncetime=100)
+        GPIO.add_event_detect(18,GPIO.RISING,callback=button_callback4,bouncetime=100)
     else:
-        thisColor=BLACK
-    # knot
-    pygame.draw.rect(screen,thisColor,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),topBuffer,knotWidthHeight,knotWidthHeight])
-    # right rope
-    pygame.draw.rect(screen,RED,[screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+knotWidthHeight,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidth,ropeThickness])
-    # left rope
-    pygame.draw.rect(screen,BLUE,[0,topBuffer+knotWidthHeightHalf-ropeThicknessHalf,screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance),ropeThickness])
-    # left victory
-    text=gameFont050.render('win',False,BLACK)
-    thisTextRect=text.get_rect(center=(250,25))
-    screen.blit(text,thisTextRect)
-    # right victory
-    text=gameFont050.render('win',False,BLACK)
-    thisTextRect=text.get_rect(center=(1675,25))
-    screen.blit(text,thisTextRect)
+        print('Not running on Raspberry Pi')
 
-    # rounds until victory
-    if (winner == ''):
-        text=gameFont100.render(str(roundsToWin-abs(p1Rounds-p2Rounds)),False,BLACK)
-        thisTextRect=text.get_rect(center=(screenWidthMiddle-knotWidthHeightHalf+(knot*knotMoveDistance)+(knotWidthHeight/2),topBuffer+(knotWidthHeight/2)))
-        screen.blit(text,thisTextRect)
+    # preferred display modes
+    wantedDisplays=[(1920,1080),(1366,768)]
 
-    pygame.display.flip()
+    # can we get the mode we want
+    for testMode in wantedDisplays:
+        if pygame.display.mode_ok(testMode,pygame.FULLSCREEN,screenBitDepth):
+            print("can do {0}".format(testMode))
+            screenWidth=testMode[0]
+            screenHeight=testMode[1]
+            break
 
-if not (winner == ''):
-    done=False
-    numTicks=0
-    while not done:
-        clock.tick(tickSpeed)
-        numTicks+=1
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
+    if (screenWidth == 0):
+        print("Display not capable of {0}, exiting".format(wantedDisplays))
+        sys.exit(1)
 
-        key = pygame.key.get_pressed()
+    playerPowerWidthCell=int(screenWidth/30)
+    playerPowerHeightCell=int(screenHeight/60)
+    playerPowerCellBuffer=2
+    screenWidthMiddle=int(screenWidth/2)
+    screenHeightMiddle=int(screenHeight/2)
+    knotWidthHeight=int(screenWidth/10)
+    knotWidthHeightHalf=int(knotWidthHeight/2)
+    knotMoveDistance=int(screenWidth/((roundsToWin*2)+10))
+    topBuffer=50
+    ropeThickness=int(knotWidthHeight/2)
+    ropeThicknessHalf=int(ropeThickness/2)
 
-        if key[K_ESCAPE]:
-            done=True
+    screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
+    pygame.display.set_caption('Hello World')
+    pygame.mouse.set_visible(1)
 
-        screen.fill(WHITE)
+    gameFont050=pygame.font.Font(gameFont,50)
+    gameFont075=pygame.font.Font(gameFont,75)
+    gameFont100=pygame.font.Font(gameFont,100)
 
-        p1FinalRounds=p1Rounds
-        p1FinalTaps=p1CountAll
-        p2FinalRounds=p2Rounds
-        p2FinalTaps=p2CountAll
-        thisSeconds=numSeconds
-        if (thisSeconds==0):
-            thisSeconds=1
-        p1FinalAvg=p1CountAll/thisSeconds
-        p2FinalAvg=p2CountAll/thisSeconds
+    clock=pygame.time.Clock()
 
-        if (winner=='Blue'):
-            pygame.draw.rect(screen,BLUE,[50,100,screenWidthMiddle-50-50,600])
-            text=gameFont100.render('winner',False,WHITE)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle/2,400))
-            screen.blit(text,thisTextRect)
-        elif (winner=='Red'):
-            pygame.draw.rect(screen,RED,[screenWidthMiddle+50,100,screenWidthMiddle-50-50,600])
-            text=gameFont100.render('winner',False,WHITE)
-            thisTextRect=text.get_rect(center=(screenWidth-(screenWidthMiddle/2),400))
-            screen.blit(text,thisTextRect)
+    screen_title()
+    screen_game()
 
-        # right player rounds
-        text=gameFont050.render('Rnds',False,BLACK)
-        screen.blit(text,(screenWidth-300,screenHeight-300))
-        text=gameFont050.render(str(p1FinalRounds),False,BLACK)
-        screen.blit(text,(screenWidth-150,screenHeight-300))
-        # right player taps
-        text=gameFont050.render('Taps',False,BLACK)
-        screen.blit(text,(screenWidth-300,screenHeight-200))
-        text=gameFont050.render(str(p1FinalTaps),False,BLACK)
-        screen.blit(text,(screenWidth-150,screenHeight-200))
-        # right player avg
-        text=gameFont050.render('Avg',False,BLACK)
-        screen.blit(text,(screenWidth-300,screenHeight-100))
-        text=gameFont050.render("{0:0.2f}".format(p1FinalAvg),False,BLACK)
-        screen.blit(text,(screenWidth-150,screenHeight-100))
-        # left player rounds
-        text=gameFont050.render('Rnds',False,BLACK)
-        screen.blit(text,(50,screenHeight-300))
-        text=gameFont050.render(str(p2FinalRounds),False,BLACK)
-        screen.blit(text,(200,screenHeight-300))
-        # left player taps
-        text=gameFont050.render('Taps',False,BLACK)
-        screen.blit(text,(50,screenHeight-200))
-        text=gameFont050.render(str(p2FinalTaps),False,BLACK)
-        screen.blit(text,(200,screenHeight-200))
-        # left player avg
-        text=gameFont050.render('Avg',False,BLACK)
-        screen.blit(text,(50,screenHeight-100))
-        text=gameFont050.render("{0:0.2f}".format(p2FinalAvg),False,BLACK)
-        screen.blit(text,(200,screenHeight-100))
-
-        pygame.display.flip()
+    if (isRasPi):
+        # clean up
+        GPIO.cleanup()
 
 
-if (isRasPi):
-    # clean up
-    GPIO.cleanup()
+if __name__ == "__main__":
+    main()
+
 
