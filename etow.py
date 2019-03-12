@@ -27,6 +27,13 @@ gameFont100=None
 gameFont250=None
 gameFont500=None
 
+p1CountAll=0
+p1Count1s=0
+p1Mode=0
+p2CountAll=0
+p2Count1s=0
+p2Mode=0
+
 clock=None
 
 tickSpeed=60
@@ -67,35 +74,41 @@ def screen_rules():
     numTicks=0
     numSeconds=10
     while not done:
+        clock.tick(tickSpeed)
         numTicks += 1
         if ((numTicks % tickSpeed) == 0):
             numSeconds -= 1
+            screen.fill(WHITE)
+            text=gameFont100.render('Press alternating buttons quickly.',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
+            screen.blit(text,thisTextRect)
+            text=gameFont100.render('Defeat your opponent.',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
+            screen.blit(text,thisTextRect)
+            text=gameFont500.render(str(numSeconds),False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
+            screen.blit(text,thisTextRect)
+            pygame.display.flip()
         if (numSeconds == 0):
             done=True
-        clock.tick(tickSpeed)
-        screen.fill(WHITE)
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
 
-        text=gameFont100.render('Press alternating buttons quickly.',False,BLACK)
-        thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
-        screen.blit(text,thisTextRect)
-        text=gameFont100.render('Defeat your opponent.',False,BLACK)
-        thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
-        screen.blit(text,thisTextRect)
-        text=gameFont500.render(str(numSeconds),False,BLACK)
-        thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
-        screen.blit(text,thisTextRect)
-
-        pygame.display.flip()
 
     pygame.event.pump()
 
 
 def screen_game():
+    global p1Mode
+    global p1CountAll
+    global p1Count1s
+    global p2Mode
+    global p2CountAll
+    global p2Count1s
+
     numTicks=0
     numSeconds=0
     p1Mode=0
