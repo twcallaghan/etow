@@ -41,7 +41,7 @@ p2b2=False
 
 clock=None
 
-tickSpeed=60
+tickSpeed=30
 
 
 def clear_buttons():
