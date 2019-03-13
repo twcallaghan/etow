@@ -34,13 +34,31 @@ p2CountAll=0
 p2Count1s=0
 p2Mode=0
 
+p1b1=False
+p1b2=False
+p2b1=False
+p2b2=False
+
 clock=None
 
 tickSpeed=60
 
 
+def clear_buttons():
+    global p1b1
+    global p1b2
+    global p2b1
+    global p2b2
+    p1b1=False
+    p1b2=False
+    p2b1=False
+    p2b2=False
+
+
 def screen_title():
     done=False
+    colorValue=0
+    clear_buttons()
     while not done:
         clock.tick(tickSpeed)
         screen.fill(WHITE)
@@ -50,19 +68,28 @@ def screen_title():
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
 
-        if (True):
-            text=gameFont100.render('Electronic',False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
-            screen.blit(text,thisTextRect)
-            text=gameFont100.render('Tug',False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
-            screen.blit(text,thisTextRect)
-            text=gameFont100.render('Of',False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,650))
-            screen.blit(text,thisTextRect)
-            text=gameFont100.render('War',False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
-            screen.blit(text,thisTextRect)
+        if (p1b1 or p1b2 or p2b1 or p2b2):
+            done=True
+
+        text=gameFont100.render('Electronic',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,150))
+        screen.blit(text,thisTextRect)
+        text=gameFont100.render('Tug',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,350))
+        screen.blit(text,thisTextRect)
+        text=gameFont100.render('Of',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,550))
+        screen.blit(text,thisTextRect)
+        text=gameFont100.render('War',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,750))
+        screen.blit(text,thisTextRect)
+        text=gameFont050.render('Hit Any Button',False,(colorValue,colorValue,colorValue))
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,950))
+        screen.blit(text,thisTextRect)
+
+        colorValue += 16
+        if (colorValue > 255):
+            colorValue=0
 
         pygame.display.flip()
 
@@ -70,23 +97,75 @@ def screen_title():
 
 
 def screen_rules():
+    numSeconds=10
+    clear_buttons()
+
+    # instructions
+    done=False
+    colorValue=0
+    while not done:
+        clock.tick(tickSpeed)
+        screen.fill(WHITE)
+        text=gameFont100.render('Press alternating buttons quickly.',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
+        screen.blit(text,thisTextRect)
+        text=gameFont100.render('Defeat your opponent.',False,BLACK)
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
+        screen.blit(text,thisTextRect)
+        text=gameFont050.render('Press all 4 buttons to continue.',False,(colorValue,colorValue,colorValue))
+        thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
+        screen.blit(text,thisTextRect)
+
+        if (p1b1):
+            text=gameFont050.render('4',False,RED)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle+600,950))
+            screen.blit(text,thisTextRect)
+
+        if (p1b2):
+            text=gameFont050.render('3',False,RED)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle+400,950))
+            screen.blit(text,thisTextRect)
+
+        if (p2b1):
+            text=gameFont050.render('2',False,BLUE)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle-400,950))
+            screen.blit(text,thisTextRect)
+
+        if (p2b2):
+            text=gameFont050.render('1',False,BLUE)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle-600,950))
+            screen.blit(text,thisTextRect)
+
+
+        colorValue += 16
+        if (colorValue > 255):
+            colorValue=0
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
+                done=True
+
+        if (p1b1 and p1b2 and p2b1 and p2b2):
+            done=True
+
+    # countdown
     done=False
     numTicks=0
-    numSeconds=10
     while not done:
         clock.tick(tickSpeed)
         numTicks += 1
         if ((numTicks % tickSpeed) == 0):
             numSeconds -= 1
             screen.fill(WHITE)
-            text=gameFont100.render('Press alternating buttons quickly.',False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,250))
-            screen.blit(text,thisTextRect)
-            text=gameFont100.render('Defeat your opponent.',False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,450))
+            text=gameFont100.render('Game starts in...',False,BLACK)
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,350))
             screen.blit(text,thisTextRect)
             text=gameFont500.render(str(numSeconds),False,BLACK)
-            thisTextRect=text.get_rect(center=(screenWidthMiddle,850))
+            thisTextRect=text.get_rect(center=(screenWidthMiddle,650))
             screen.blit(text,thisTextRect)
             pygame.display.flip()
         if (numSeconds == 0):
@@ -96,7 +175,6 @@ def screen_rules():
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
-
 
     pygame.event.pump()
 
@@ -141,11 +219,16 @@ def screen_game():
     while not done:
         clock.tick(tickSpeed)
         numTicks+=1
+
+        if (p2IsBot):
+            p2Count1s=p2Speed
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
+
             if ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_LEFT) and (p1Mode == 0)):
                 p1CountAll+=1
                 p1Count1s+=1
@@ -154,9 +237,8 @@ def screen_game():
                 p1CountAll+=1
                 p1Count1s+=1
                 p1Mode=0
-            if (p2IsBot):
-                p2Count1s=p2Speed
-            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_z) and (p2Mode == 0)):
+
+            if ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_z) and (p2Mode == 0)):
                 p2CountAll+=1
                 p2Count1s+=1
                 p2Mode=1
@@ -382,7 +464,8 @@ def button_callback1(channel):
     global p1CountAll
     global p1Count1s
     global p1Mode
-    #print("Button 1 was pushed!")
+    global p1b1
+    p1b1=True
     if (p1Mode == 0):
         p1CountAll+=1
         p1Count1s+=1
@@ -392,7 +475,8 @@ def button_callback2(channel):
     global p1CountAll
     global p1Count1s
     global p1Mode
-    #print("Button 1 was pushed!")
+    global p1b2
+    p1b2=True
     if (p1Mode == 1):
         p1CountAll+=1
         p1Count1s+=1
@@ -402,7 +486,8 @@ def button_callback3(channel):
     global p2CountAll
     global p2Count1s
     global p2Mode
-    #print("Button 1 was pushed!")
+    global p2b1
+    p2b1=True
     if (p2Mode == 0):
         p2CountAll+=1
         p2Count1s+=1
@@ -412,7 +497,8 @@ def button_callback4(channel):
     global p2CountAll
     global p2Count1s
     global p2Mode
-    #print("Button 1 was pushed!")
+    global p2b2
+    p2b2=True
     if (p2Mode == 1):
         p2CountAll+=1
         p2Count1s+=1
@@ -486,7 +572,7 @@ def main():
         print("Display not capable of {0}, exiting".format(wantedDisplays))
         sys.exit(1)
 
-    playerPowerWidthCell=int(screenWidth/30)
+    playerPowerWidthCell=int(screenWidth/35)
     playerPowerHeightCell=int(screenHeight/60)
     playerPowerCellBuffer=2
     screenWidthMiddle=int(screenWidth/2)
@@ -499,8 +585,8 @@ def main():
     ropeThicknessHalf=int(ropeThickness/2)
 
     screen = pygame.display.set_mode((screenWidth, screenHeight),pygame.FULLSCREEN,screenBitDepth)
-    pygame.display.set_caption('Hello World')
-    pygame.mouse.set_visible(1)
+    #pygame.display.set_caption('Hello World')
+    pygame.mouse.set_visible(0)
 
     gameFont050=pygame.font.Font(gameFont,50)
     gameFont075=pygame.font.Font(gameFont,75)
