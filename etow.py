@@ -9,6 +9,9 @@ p2IsBot=True
 p2Speed=8
 roundsToWin=10
 
+lbTaps='./lbtaps.txt'
+lbAvg='./lbavg.txt'
+
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
 BLUE =  (  0,   0, 255)
@@ -409,8 +412,83 @@ def screen_game():
         pygame.display.flip()
 
     if not (winner == ''):
+        clear_buttons()
         done=False
         numTicks=0
+
+        p1FinalRounds=p1Rounds
+        p1FinalTaps=p1CountAll
+        p2FinalRounds=p2Rounds
+        p2FinalTaps=p2CountAll
+        thisSeconds=numSeconds
+        if (thisSeconds==0):
+            thisSeconds=1
+        p1FinalAvg=p1CountAll/thisSeconds
+        p2FinalAvg=p2CountAll/thisSeconds
+
+        listTaps=[]
+        listAvg=[]
+        lbTaps='./lbtaps.txt'
+        lbAvg='./lbavg.txt'
+        with open(lbTaps) as f:
+            tempTaps=f.read().splitlines()
+        for thisTaps in tempTaps:
+            listTaps.append(int(thisTaps))
+        with open(lbTaps) as f:
+            tempAvg=f.read().splitlines()
+        for thisAvg in tempAvg:
+            listAvg.append(float(thisAvg))
+        listTaps.append(int(p1FinalTaps))
+        listTaps.append(int(p2FinalTaps))
+        listAvg.append(float(p1FinalAvg))
+        listAvg.append(float(p2FinalAvg))
+        listTaps=sorted(listTaps,reverse=True)
+        listAvg=sorted(listAvg,reverse=True)
+
+        with open(lbTaps,'w') as f:
+            for item in listTaps:
+                f.write("{0}\n".format(item))
+
+        with open(lbAvg,'w') as f:
+            for item in listAvg:
+                f.write("{0:0.2f}\n".format(item))
+
+        p1TapsLB=1
+        p2TapsLB=1
+        p1AvgLB=1
+        p2AvgLB=1
+
+        thisPosition=1
+        for thisTaps in listTaps:
+            if p1FinalTaps >= thisTaps:
+                p1TapsLB=thisPosition
+                break
+            thisPosition += 1
+
+        thisPosition=1
+        for thisTaps in listTaps:
+            if p2FinalTaps >= thisTaps:
+                p2TapsLB=thisPosition
+                break
+            thisPosition += 1
+
+        thisPosition=1
+        for thisAvg in listAvg:
+            if p1FinalAvg >= thisAvg:
+                p1AvgLB=thisPosition
+                break
+            thisPosition += 1
+
+        thisPosition=1
+        for thisAvg in listAvg:
+            if p2FinalAvg >= thisAvg:
+                p2AvgLB=thisPosition
+                break
+            thisPosition += 1
+
+        TapsLBSize=len(listTaps)
+        AvgLBSize=len(listAvg)
+
         while not done and not allDone:
             clock.tick(tickSpeed)
             numTicks+=1
@@ -419,18 +497,14 @@ def screen_game():
                     pygame.quit()
                 elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                     done=True
+                elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_F8)):
+                    done=True
+                    allDone=True
+
+            if (p1b1 and p1b2 and p2b1 and p2b2):
+                done=True
 
             screen.fill(WHITE)
-
-            p1FinalRounds=p1Rounds
-            p1FinalTaps=p1CountAll
-            p2FinalRounds=p2Rounds
-            p2FinalTaps=p2CountAll
-            thisSeconds=numSeconds
-            if (thisSeconds==0):
-                thisSeconds=1
-            p1FinalAvg=p1CountAll/thisSeconds
-            p2FinalAvg=p2CountAll/thisSeconds
 
             if (winner=='Blue'):
                 pygame.draw.rect(screen,BLUE,[50,100,screenWidthMiddle-50-50,600])
@@ -453,11 +527,21 @@ def screen_game():
             screen.blit(text,(screenWidth-300,screenHeight-200))
             text=gameFont050.render(str(p1FinalTaps),False,BLACK)
             screen.blit(text,(screenWidth-150,screenHeight-200))
+            # right player taps rank
+            #text=gameFont050.render('Taps',False,BLACK)
+            #screen.blit(text,(screenWidth-300,screenHeight-200))
+            text=gameFont050.render(str(p1TapsLB)+' of '+str(TapsLBSize),False,BLACK)
+            screen.blit(text,(screenWidth-550,screenHeight-200))
             # right player avg
             text=gameFont050.render('Avg',False,BLACK)
             screen.blit(text,(screenWidth-300,screenHeight-100))
             text=gameFont050.render("{0:0.2f}".format(p1FinalAvg),False,BLACK)
             screen.blit(text,(screenWidth-150,screenHeight-100))
+            # right player avg rank
+            #text=gameFont050.render('Avg',False,BLACK)
+            #screen.blit(text,(screenWidth-300,screenHeight-100))
+            text=gameFont050.render(str(p1AvgLB)+' of '+str(AvgLBSize),False,BLACK)
+            screen.blit(text,(screenWidth-550,screenHeight-100))
             # left player rounds
             text=gameFont050.render('Rnds',False,BLACK)
             screen.blit(text,(50,screenHeight-300))
@@ -468,11 +552,21 @@ def screen_game():
             screen.blit(text,(50,screenHeight-200))
             text=gameFont050.render(str(p2FinalTaps),False,BLACK)
             screen.blit(text,(200,screenHeight-200))
+            # left player taps rank
+            #text=gameFont050.render('Taps',False,BLACK)
+            #screen.blit(text,(50,screenHeight-200))
+            text=gameFont050.render(str(p2TapsLB)+' of '+str(TapsLBSize),False,BLACK)
+            screen.blit(text,(400,screenHeight-200))
             # left player avg
             text=gameFont050.render('Avg',False,BLACK)
             screen.blit(text,(50,screenHeight-100))
             text=gameFont050.render("{0:0.2f}".format(p2FinalAvg),False,BLACK)
             screen.blit(text,(200,screenHeight-100))
+            # left player avg rank
+            #text=gameFont050.render('Avg',False,BLACK)
+            #screen.blit(text,(50,screenHeight-100))
+            text=gameFont050.render(str(p2AvgLB)+' of '+str(AvgLBSize),False,BLACK)
+            screen.blit(text,(400,screenHeight-100))
 
             pygame.display.flip()
 
