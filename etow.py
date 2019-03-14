@@ -27,6 +27,8 @@ gameFont100=None
 gameFont250=None
 gameFont500=None
 
+allDone=False
+
 p1CountAll=0
 p1Count1s=0
 p1Mode=0
@@ -56,10 +58,11 @@ def clear_buttons():
 
 
 def screen_title():
+    global allDone
     done=False
     colorValue=0
     clear_buttons()
-    while not done:
+    while not done and not allDone:
         clock.tick(tickSpeed)
         screen.fill(WHITE)
         for event in pygame.event.get():
@@ -67,6 +70,9 @@ def screen_title():
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_F8)):
+                done=True
+                allDone=True
 
         if (p1b1 or p1b2 or p2b1 or p2b2):
             done=True
@@ -97,13 +103,14 @@ def screen_title():
 
 
 def screen_rules():
+    global allDone
     numSeconds=10
     clear_buttons()
 
     # instructions
     done=False
     colorValue=0
-    while not done:
+    while not done and not allDone:
         clock.tick(tickSpeed)
         screen.fill(WHITE)
         text=gameFont100.render('Press alternating buttons quickly.',False,BLACK)
@@ -148,6 +155,9 @@ def screen_rules():
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_F8)):
+                done=True
+                allDone=True
 
         if (p1b1 and p1b2 and p2b1 and p2b2):
             done=True
@@ -155,7 +165,7 @@ def screen_rules():
     # countdown
     done=False
     numTicks=0
-    while not done:
+    while not done and not allDone:
         clock.tick(tickSpeed)
         numTicks += 1
         if ((numTicks % tickSpeed) == 0):
@@ -175,6 +185,9 @@ def screen_rules():
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_F8)):
+                done=True
+                allDone=True
 
     pygame.event.pump()
 
@@ -186,6 +199,7 @@ def screen_game():
     global p2Mode
     global p2CountAll
     global p2Count1s
+    global allDone
 
     numTicks=0
     numSeconds=0
@@ -216,7 +230,7 @@ def screen_game():
 
     winner=''
     done=False
-    while not done:
+    while not done and not allDone:
         clock.tick(tickSpeed)
         numTicks+=1
 
@@ -228,6 +242,9 @@ def screen_game():
                 pygame.quit()
             elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE)):
                 done=True
+            elif ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_F8)):
+                done=True
+                allDone=True
 
             if ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_LEFT) and (p1Mode == 0)):
                 p1CountAll+=1
@@ -394,7 +411,7 @@ def screen_game():
     if not (winner == ''):
         done=False
         numTicks=0
-        while not done:
+        while not done and not allDone:
             clock.tick(tickSpeed)
             numTicks+=1
             for event in pygame.event.get():
@@ -596,9 +613,10 @@ def main():
 
     clock=pygame.time.Clock()
 
-    screen_title()
-    screen_rules()
-    screen_game()
+    while not allDone:
+        screen_title()
+        screen_rules()
+        screen_game()
 
     if (isRasPi):
         # clean up
