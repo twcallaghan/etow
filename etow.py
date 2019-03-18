@@ -5,7 +5,7 @@ import pygame
 from pygame.locals import *
 
 isRasPi=False
-p2IsBot=True
+p2IsBot=False
 p2Speed=8
 roundsToWin=10
 
@@ -489,7 +489,7 @@ def screen_game():
         TapsLBSize=len(listTaps)
         AvgLBSize=len(listAvg)
 
-        while not done and not allDone:
+        while (not done and not allDone) or (numTicks < 600):
             clock.tick(tickSpeed)
             numTicks+=1
             for event in pygame.event.get():
